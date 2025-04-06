@@ -116,7 +116,6 @@ def get_keyword_impact(titles, views, ngram_range=(1, 2), stop_words="english"):
     Returns:
         pd.DataFrame: Keywords and their impact scores, sorted by impact (descending).
     """
-    # Create DataFrame
     df = pd.DataFrame({"title": titles, "views": views})
     
     # Vectorize titles using TF-IDF
@@ -124,7 +123,6 @@ def get_keyword_impact(titles, views, ngram_range=(1, 2), stop_words="english"):
     X = tfidf.fit_transform(df["title"])
     y = df["views"]
     
-    # Train linear regression model
     model = LinearRegression()
     model.fit(X, y)
     
@@ -132,11 +130,9 @@ def get_keyword_impact(titles, views, ngram_range=(1, 2), stop_words="english"):
     keywords = tfidf.get_feature_names_out()
     coefs = model.coef_
     
-    # Normalize impact scores to 1-10 range
     scaler = MinMaxScaler(feature_range=(1, 10))
     normalized_impact = scaler.fit_transform(coefs.reshape(-1, 1)).flatten()
     
-    # Create and sort impact DataFrame
     keyword_impact = pd.DataFrame({
         "keyword": keywords,
         "impact": coefs,
