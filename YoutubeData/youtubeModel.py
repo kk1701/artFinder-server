@@ -1,8 +1,3 @@
-import nltk
-import os
-import re
-import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
@@ -11,10 +6,14 @@ from sklearn.impute import SimpleImputer
 from textblob import TextBlob
 from wordcloud import WordCloud
 
+import os
+import re
+import pandas as pd
+import matplotlib.pyplot as plt
+
 
 file_path = os.path.abspath("YoutubeData/youtube_data.csv")
 data = pd.read_csv(file_path)
-
 
 data['comment_count'] = data['Comments'].fillna("").apply(lambda x: len(str(x).split(" | ")))
 
@@ -63,7 +62,7 @@ data['Sentiment'] = data['Cleaned Comments'].apply(get_sentiment)
 all_comments = ' '.join(data['Cleaned Comments'])
 
 
-def generate_wordcloud(all_comments):
+def generate_youtube_wordcloud(all_comments):
     wordcloud = WordCloud(width=800, height=400, background_color='white').generate(all_comments)
     plt.figure(figsize=(10, 5))
     plt.imshow(wordcloud, interpolation='bilinear')
@@ -73,9 +72,9 @@ def generate_wordcloud(all_comments):
     # plt.show()
     plt.close()
     
-generate_wordcloud(all_comments)
+generate_youtube_wordcloud(all_comments)
 
-def generate_bargraphs(data):
+def generate_youtube_bargraphs(data):
     data['Score 1'] = data['Likes']
     data['Score 2'] = data['Likes'] / (data['comment_count'] + 1e-10)
     data['Score 3'] = data['Views']
@@ -104,4 +103,4 @@ def generate_bargraphs(data):
     # plt.show()
     plt.close()
     
-generate_bargraphs(data)
+generate_youtube_bargraphs(data)

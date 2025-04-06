@@ -1,5 +1,6 @@
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
+
 import csv
 import os
 
@@ -71,7 +72,7 @@ def collect_youtube_data(query, max_results=50):
 
     return video_data
 
-def save_to_csv(video_data, filename="YoutubeData/youtube_data.csv"):
+def save_youtubedata_to_csv(video_data, filename="YoutubeData/youtube_data.csv"):
 
     columns = ['Video ID', 'Title', 'Description', 'Published At', 'Channel Title', 'Views', 'Likes', 'Dislikes', 'Comments']
 
@@ -96,6 +97,6 @@ def save_to_csv(video_data, filename="YoutubeData/youtube_data.csv"):
 # Testing function
 query = "productivity software reviews"
 youtube_data = collect_youtube_data(query)
-save_to_csv(youtube_data)
+save_youtubedata_to_csv(youtube_data)
 
 print(f"YouTube data has been saved to 'youtube_data.csv'.")
