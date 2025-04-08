@@ -13,7 +13,7 @@ reddit = praw.Reddit(client_id=REDDIT_CLIENT_ID,
                      client_secret=REDDIT_CLIENT_SECRET,
                      user_agent="u/New-Connection5278")
 
-print("Reddit API set up successfully!")
+# print("Reddit API set up successfully!")
 
 
 def collect_reddit_data(query, max_results=50):
@@ -37,7 +37,8 @@ def collect_reddit_data(query, max_results=50):
             post_data['comments'].append(comment.body)
 
         posts.append(post_data)
-    return posts
+    
+    save_redditdata_to_csv(posts)
 
 def save_redditdata_to_csv(reddit_data, filename="RedditData/reddit_data.csv"):
     # Flattening the data for CSV conversion
@@ -56,8 +57,8 @@ def save_redditdata_to_csv(reddit_data, filename="RedditData/reddit_data.csv"):
             })
     df = pd.DataFrame(flattened_data)
     df.to_csv(filename, index=False)
-    print(f"Reddit data saved to {filename}")
-    
-query = "productivity software reviews"
-reddit_data = collect_reddit_data(query)
-save_redditdata_to_csv(reddit_data)
+
+
+# query = "productivity software reviews"
+# reddit_data = collect_reddit_data(query)
+# save_redditdata_to_csv(reddit_data)

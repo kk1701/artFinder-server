@@ -1,8 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 
-from model import get_youtube_data, get_reddit_data, get_keyword_impact
+from schemas import ProductRequested, YoutubeTableResponse, RedditTableResponse, YoutubeModelResponse, RedditModelResponse
+from YoutubeData.youtubeData import collect_youtube_data
+from RedditData.redditData import collect_reddit_data
+from YoutubeData.youtubeModel import youtube_model
+from RedditData.redditModel import reddit_model
+
+import os
+import base64
+import pandas as pd
 
 app = FastAPI()
 
@@ -14,45 +21,96 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class ProductRequested(BaseModel):
-    product_name: str
+youtube_data = pd.DataFrame()
+reddit_data = pd.DataFrame()
 
-class DataResponse(BaseModel):
-    youtube_titles: list[str]
-    youtube_urls: list[str]
-    youtube_views: list[int]
-    reddit_titles: list[str]
-    reddit_urls: list[str]
-    reddit_scores: list[int]
-    youtube_keywords: list[str]
-    youtube_keyword_impacts: list[float]
-    reddit_keywords: list[str]
-    reddit_keyword_impacts: list[float]
-      
-@app.post("/getData", response_model=DataResponse)
-async def getYoutubeData(request: ProductRequested):
-    
+@app.post("/submitForm")
+async def submitForm(request: ProductRequested):
     product = request.product_name
-    youtube_urls, youtube_titles, youtube_views = get_youtube_data(product)
-    reddit_urls, reddit_titles, reddit_scores = get_reddit_data(product)
+    query = product + " reviews"
     
-    youtube_df = get_keyword_impact(youtube_titles, youtube_views)
-    youtube_keywords = youtube_df["keyword"].tolist()
-    youtube_keyword_impacts = youtube_df["normalized_impact"].tolist()
+    global youtube_data
+    youtube_data = collect_youtube_data(query)
     
-    reddit_df = get_keyword_impact(reddit_titles, reddit_scores)
-    reddit_keywords = reddit_df["keyword"].tolist()
-    reddit_keyword_impacts = reddit_df["normalized_impact"].tolist()
+    global reddit_data
+    reddit_data = collect_reddit_data(query)
     
     return {
-        "youtube_titles": youtube_titles,
-        "youtube_urls": youtube_urls,
-        "youtube_views": youtube_views,
-        "reddit_titles": reddit_titles,
-        "reddit_urls": reddit_urls,
-        "reddit_scores": reddit_scores,
-        "youtube_keywords": youtube_keywords[:10],
-        "youtube_keyword_impacts": youtube_keyword_impacts[:10],
-        "reddit_keywords": reddit_keywords[:10],
-        "reddit_keyword_impacts": reddit_keyword_impacts[:10]
+        "message": "recieved product name."
     }
+      
+@app.get("/youtubeTableData", response_model=YoutubeTableResponse)
+async def youtubeTableData():
+
+    youtube_titles = youtube_data['Title']
+    youtube_urls = youtube_data['URL']
+    youtube_views = youtube_data['Views']
+    
+    return {
+        "youtube_titles": youtube_titles[:10],
+        "youtube_urls": youtube_urls[:10],
+        "youtube_views": youtube_views[:10]
+    }
+      
+@app.get("/redditTableData", response_model=RedditTableResponse)
+async def redditTableData():
+    
+    reddit_titles = reddit_data['title']
+    reddit_urls = reddit_data['url']
+    reddit_scores = reddit_data['score']
+    
+    return {
+        "reddit_titles": reddit_titles[:10],
+        "reddit_urls": reddit_urls[:10],
+        "reddit_scores": reddit_scores[:10]
+    }
+
+@app.get("/getYoutubeWordcloud")
+async def getYoutubeWordcloud():
+    
+    youtube_model(youtube_data)
+    
+    file_path = f"YoutubeData/youtube_wordcloud.png"
+    
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            base64_image = base64.b64encode(f.read()).decode("utf-8")
+        return {"image": f"data:image/png;base64,{base64_image}"}
+    
+    return {"error": "Youtube wordcloud not found"}
+
+@app.get("/getYoutubeBarGraphs")
+async def getYoutubeBarGraphs():
+    file_path = f"YoutubeData/youtube_bargraphs.png"
+    
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            base64_image = base64.b64encode(f.read()).decode("utf-8")
+        return {"image": f"data:image/png;base64,{base64_image}"}
+    
+    return {"error": "Youtube bar graphs not found"}
+
+@app.get("/getRedditWordCloud")
+async def getRedditWordCloud():
+    
+    reddit_model(reddit_data)
+    
+    file_path = f"RedditData/youtube_wordcloud.png"
+    
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            base64_image = base64.b64encode(f.read()).decode("utf-8")
+        return {"image": f"data:image/png;base64,{base64_image}"}
+    
+    return {"error": "Reddit wordcloud not found"}
+
+@app.get("/getRedditBarGraph")
+async def getRedditWordCloud():
+    file_path = f"RedditData/reddit_bargraph.png"
+    
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            base64_image = base64.b64encode(f.read()).decode("utf-8")
+        return {"image": f"data:image/png;base64,{base64_image}"}
+    
+    return {"error": "Reddit bar graph not found"}

@@ -6,41 +6,8 @@ from sklearn.impute import SimpleImputer
 from textblob import TextBlob
 from wordcloud import WordCloud
 
-import os
 import re
-import pandas as pd
 import matplotlib.pyplot as plt
-
-
-file_path = os.path.abspath("YoutubeData/youtube_data.csv")
-data = pd.read_csv(file_path)
-
-data['comment_count'] = data['Comments'].fillna("").apply(lambda x: len(str(x).split(" | ")))
-
-data['score'] = data['comment_count'] / data['Likes']
-
-data['label'] = (data['score'] > 1).astype(int)
-
-features = data[['Views', 'Likes', 'Dislikes', 'comment_count']]
-label = data['label']
-
-# Impute missing values using the mean
-imputer = SimpleImputer(strategy='mean')
-features_imputed = imputer.fit_transform(features)
-
-# Normalize features
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(features_imputed)
-
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, label, test_size=0.2, random_state=42)
-
-model = LogisticRegression()
-model.fit(X_train, y_train)
-
-y_pred = model.predict(X_test)
-# print(classification_report(y_test, y_pred))
-
-
 
 def preprocess_text(text):
     if not isinstance(text, str):
@@ -49,18 +16,12 @@ def preprocess_text(text):
     text = re.sub(r'http\S+|www\S+|https\S+', '', text, flags=re.MULTILINE)
     text = re.sub(r'[^A-Za-z0-9\s\U0001F600-\U0001F64F]', '', text)
     return text
-data['Cleaned Comments'] = data['Comments'].apply(preprocess_text)
 
-# Sentiment analysis
 def get_sentiment(text):
     if not text:
         return 0
     analysis = TextBlob(text)
     return analysis.sentiment.polarity
-# Apply sentiment analysis
-data['Sentiment'] = data['Cleaned Comments'].apply(get_sentiment)
-all_comments = ' '.join(data['Cleaned Comments'])
-
 
 def generate_youtube_wordcloud(all_comments):
     wordcloud = WordCloud(width=800, height=400, background_color='white').generate(all_comments)
@@ -71,8 +32,6 @@ def generate_youtube_wordcloud(all_comments):
     plt.savefig('YoutubeData/youtube_wordcloud.png')
     # plt.show()
     plt.close()
-    
-generate_youtube_wordcloud(all_comments)
 
 def generate_youtube_bargraphs(data):
     data['Score 1'] = data['Likes']
@@ -103,4 +62,44 @@ def generate_youtube_bargraphs(data):
     # plt.show()
     plt.close()
     
-generate_youtube_bargraphs(data)
+    
+def youtube_model(data):
+    data['comment_count'] = data['Comments'].fillna("").apply(lambda x: len(str(x).split(" | ")))
+
+    data['score'] = data['comment_count'] / data['Likes']
+
+    data['label'] = (data['score'] > 1).astype(int)
+
+    features = data[['Views', 'Likes', 'Dislikes', 'comment_count']]
+    label = data['label']
+
+    # Impute missing values using the mean
+    imputer = SimpleImputer(strategy='mean')
+    features_imputed = imputer.fit_transform(features)
+
+    # Normalize features
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(features_imputed)
+
+    X_train, X_test, y_train, y_test = train_test_split(X_scaled, label, test_size=0.2, random_state=42)
+
+    model = LogisticRegression()
+    model.fit(X_train, y_train)
+
+    # y_pred = model.predict(X_test)
+    # print(classification_report(y_test, y_pred))
+    
+    
+    # PRE-PROCESSING COMMENTS
+    data['Cleaned Comments'] = data['Comments'].apply(preprocess_text)
+    
+    # APPLYING SENTIMENT ANALYSIS
+    data['Sentiment'] = data['Cleaned Comments'].apply(get_sentiment)
+    
+    all_comments = ' '.join(data['Cleaned Comments'])
+    
+    # GENERATE WORDCLOUD
+    generate_youtube_wordcloud(all_comments)
+    
+    # GENERATE BAR GRAPHS
+    generate_youtube_bargraphs(data)

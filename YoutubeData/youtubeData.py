@@ -8,7 +8,7 @@ load_dotenv()
 
 api_key = os.getenv("YOUTUBE_API_KEY")
 youtube = build('youtube', 'v3', developerKey=api_key)
-print("YouTube API set up successfully!")
+# print("YouTube API set up successfully!")
 
 def collect_youtube_data(query, max_results=50):
 
@@ -25,8 +25,10 @@ def collect_youtube_data(query, max_results=50):
     # Extract video details
     for item in search_response['items']:
         video_id = item['id']['videoId']
+        video_url = f"https://www.youtube.com/watch?v={video_id}"
         video_info = {
             'video_id': video_id,
+            'video_url': video_url,
             'title': item['snippet']['title'],
             'description': item['snippet']['description'],
             'published_at': item['snippet']['publishedAt'],
@@ -70,11 +72,11 @@ def collect_youtube_data(query, max_results=50):
 
         video_data.append(video_info)
 
-    return video_data
+    save_youtubedata_to_csv(video_data)
 
 def save_youtubedata_to_csv(video_data, filename="YoutubeData/youtube_data.csv"):
 
-    columns = ['Video ID', 'Title', 'Description', 'Published At', 'Channel Title', 'Views', 'Likes', 'Dislikes', 'Comments']
+    columns = ['Video ID', 'URL', 'Title', 'Description', 'Published At', 'Channel Title', 'Views', 'Likes', 'Dislikes', 'Comments']
 
     # Write data to CSV
     with open(filename, mode='w', newline='', encoding='utf-8') as file:
@@ -84,6 +86,7 @@ def save_youtubedata_to_csv(video_data, filename="YoutubeData/youtube_data.csv")
         for video in video_data:
             writer.writerow([
                 video['video_id'],
+                video['video_url'],
                 video['title'],
                 video['description'],
                 video['published_at'],
@@ -95,8 +98,7 @@ def save_youtubedata_to_csv(video_data, filename="YoutubeData/youtube_data.csv")
             ])
 
 # Testing function
-query = "productivity software reviews"
-youtube_data = collect_youtube_data(query)
-save_youtubedata_to_csv(youtube_data)
+# query = "productivity software reviews"
+# collect_youtube_data(query)
 
-print(f"YouTube data has been saved to 'youtube_data.csv'.")
+# print(f"YouTube data has been saved to 'youtube_data.csv'.")
