@@ -40,6 +40,8 @@ def collect_reddit_data(query, max_results=50):
     
     save_redditdata_to_csv(posts)
 
+    return posts
+
 def save_redditdata_to_csv(reddit_data, filename="RedditData/reddit_data.csv"):
     # Flattening the data for CSV conversion
     flattened_data = []

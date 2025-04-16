@@ -74,6 +74,8 @@ def collect_youtube_data(query, max_results=50):
 
     save_youtubedata_to_csv(video_data)
 
+    return video_data
+
 def save_youtubedata_to_csv(video_data, filename="YoutubeData/youtube_data.csv"):
 
     columns = ['Video ID', 'URL', 'Title', 'Description', 'Published At', 'Channel Title', 'Views', 'Likes', 'Dislikes', 'Comments']

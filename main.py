@@ -21,19 +21,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-youtube_data = pd.DataFrame()
-reddit_data = pd.DataFrame()
-
 @app.post("/submitForm")
 async def submitForm(request: ProductRequested):
     product = request.product_name
     query = product + " reviews"
     
-    global youtube_data
-    youtube_data = collect_youtube_data(query)
+    collect_youtube_data(query)
     
-    global reddit_data
-    reddit_data = collect_reddit_data(query)
+    collect_reddit_data(query)
     
     return {
         "message": "recieved product name."
@@ -42,9 +37,11 @@ async def submitForm(request: ProductRequested):
 @app.get("/youtubeTableData", response_model=YoutubeTableResponse)
 async def youtubeTableData():
 
-    youtube_titles = youtube_data['Title']
-    youtube_urls = youtube_data['URL']
-    youtube_views = youtube_data['Views']
+    youtube_data = pd.read_csv("./YoutubeData/youtube_data.csv")
+
+    youtube_titles = youtube_data["Title"]
+    youtube_urls = youtube_data["URL"]
+    youtube_views = youtube_data["Views"]
     
     return {
         "youtube_titles": youtube_titles[:10],
@@ -55,6 +52,8 @@ async def youtubeTableData():
 @app.get("/redditTableData", response_model=RedditTableResponse)
 async def redditTableData():
     
+    reddit_data = pd.read_csv("./RedditData/reddit_data.csv")
+
     reddit_titles = reddit_data['title']
     reddit_urls = reddit_data['url']
     reddit_scores = reddit_data['score']
@@ -68,6 +67,7 @@ async def redditTableData():
 @app.get("/getYoutubeWordcloud")
 async def getYoutubeWordcloud():
     
+    youtube_data = pd.read_csv("./YoutubeData/youtube_data.csv")
     youtube_model(youtube_data)
     
     file_path = f"YoutubeData/youtube_wordcloud.png"
@@ -81,6 +81,7 @@ async def getYoutubeWordcloud():
 
 @app.get("/getYoutubeBarGraphs")
 async def getYoutubeBarGraphs():
+
     file_path = f"YoutubeData/youtube_bargraphs.png"
     
     if os.path.exists(file_path):
@@ -93,9 +94,10 @@ async def getYoutubeBarGraphs():
 @app.get("/getRedditWordCloud")
 async def getRedditWordCloud():
     
+    reddit_data = pd.read_csv("./RedditData/reddit_data.csv")
     reddit_model(reddit_data)
     
-    file_path = f"RedditData/youtube_wordcloud.png"
+    file_path = f"RedditData/reddit_wordcloud.png"
     
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
@@ -106,6 +108,7 @@ async def getRedditWordCloud():
 
 @app.get("/getRedditBarGraph")
 async def getRedditWordCloud():
+
     file_path = f"RedditData/reddit_bargraph.png"
     
     if os.path.exists(file_path):
