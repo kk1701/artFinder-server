@@ -10,8 +10,8 @@ import re
 import pandas as pd
 import matplotlib.pyplot as plt
 
-file_path = os.path.abspath("RedditData/reddit_data.csv")
-reddit_data = pd.read_csv(file_path)
+# file_path = os.path.abspath("RedditData/reddit_data.csv")
+# reddit_data = pd.read_csv(file_path)
 
 def preprocess_text(text):
     if not isinstance(text, str):
